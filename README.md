@@ -1,27 +1,27 @@
-# 📊 Insights 2.0: Enterprise Analytics Platform Modernization
+# Insights 2.0: Enterprise Analytics Platform Modernization
 
-## 🎯 Project Summary
+## Project Summary
 
 Designed and implemented a comprehensive enterprise analytics platform modernization that consolidated 50 fragmented Power BI reports into 20 standardized solutions. Architected a two-tier refresh strategy combining Power BI's native incremental refresh with Enhanced Refresh API orchestration, reducing refresh cycles from **4 hours to 20 minutes**. Built a centralized embedded analytics portal with department and user-level access control serving **1000+ users**.
 
 ---
 
-## 📈 Key Results at a Glance
+## Key Results at a Glance
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|------------|
-| ⏱️ **Refresh Duration** | 4 hours 15 min | 20 minutes | **92% ↓** |
-| 📑 **Reports** | 50 fragmented | 20 consolidated | **60% ↓** |
-| 💾 **Datasets** | 50 individual | 1 semantic model | **100% ✓** |
-| ✅ **Success Rate** | 85% | 99% | **14% ↑** |
-| 🔄 **Duplicate Refreshes** | 50 daily | Eliminated | **100% ✓** |
-| ⚡ **Query Speed** | 8-12 sec | 1-2 sec | **87% ↓** |
-| 📊 **Dashboard Load** | 30-45 sec | 3-5 sec | **91% ↓** |
-| 👥 **Portal Capacity** | Manual | 1000+ users | **✓ Enterprise** |
+| **Refresh Duration** | 4 hours 15 min | 20 minutes | 92% improvement |
+| **Reports** | 50 fragmented | 20 consolidated | 60% reduction |
+| **Datasets** | 50 individual | 1 semantic model | 100% consolidation |
+| **Success Rate** | 85% | 99% | 14% improvement |
+| **Duplicate Refreshes** | 50 daily | Eliminated | 100% eliminated |
+| **Query Speed** | 8-12 sec | 1-2 sec | 87% improvement |
+| **Dashboard Load** | 30-45 sec | 3-5 sec | 91% improvement |
+| **Portal Capacity** | Manual | 1000+ users | Enterprise-scale |
 
 ---
 
-## 💻 Code Samples — Proof of Implementation
+## Code Samples — Proof of Implementation
 
 **See `/code-samples/` folder for actual working code:**
 
@@ -36,9 +36,9 @@ Designed and implemented a comprehensive enterprise analytics platform moderniza
 
 ---
 
-## 🏗️ Architecture Transformation
+## Architecture Transformation
 
-### ❌ TRADITIONAL DISTRIBUTED APPROACH (BEFORE)
+### TRADITIONAL DISTRIBUTED APPROACH (BEFORE)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -55,7 +55,7 @@ Designed and implemented a comprehensive enterprise analytics platform moderniza
 │                                                                  │
 │                    SQL SERVER TABLES                            │
 │                                                                  │
-│  ❌ CHALLENGES:                                                 │
+│  CHALLENGES:                                                   │
 │     • Data duplication (50 copies of same data)                │
 │     • All 50 datasets refresh daily (wasteful)                 │
 │     • 50 different metric definitions (inconsistent)           │
@@ -70,7 +70,7 @@ Designed and implemented a comprehensive enterprise analytics platform moderniza
 
 ---
 
-### ✅ CENTRALIZED SEMANTIC MODEL APPROACH (AFTER)
+### CENTRALIZED SEMANTIC MODEL APPROACH (AFTER)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
