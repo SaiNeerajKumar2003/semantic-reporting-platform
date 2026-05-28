@@ -494,4 +494,4 @@ This approach enabled Insights 2.0 to scale from 50 independent datasets to 1 sh
 
 ---
 
-**Last Updated:** May 28, 2025 | **Status:** Active Production
+**Last Updated:** May 28, 2026 | **Status:** Active Production

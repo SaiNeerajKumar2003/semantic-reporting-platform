@@ -1,512 +1,242 @@
-# Insights 2.0: Enterprise Analytics Platform Modernization
+﻿# Insights 2.0: Enterprise Analytics Platform Modernization
 
-## Project Summary
-
-Designed and implemented a comprehensive enterprise analytics platform modernization that consolidated 50 fragmented Power BI reports into 20 standardized solutions. Architected a two-tier refresh strategy combining Power BI's native incremental refresh with Enhanced Refresh API orchestration, reducing refresh cycles from **4 hours to 20 minutes**. Built a centralized embedded analytics portal with department and user-level access control serving **1000+ users**.
+An enterprise analytics infrastructure crisis became an opportunity to build something better.
 
 ---
 
-## Key Results at a Glance
+## The Problem
+
+An enterprise was running **50 fragmented Power BI reports** with **50 separate datasets**, creating a broken analytics landscape:
+
+**What Was Broken:**
+- ❌ **Data Inconsistency:** Same metrics showed different numbers across reports (no single source of truth)
+- ❌ **4-Hour Downtime:** Nightly refresh blocked all users from 9 PM to 1 AM
+- ❌ **Unscalable Access:** Manual per-user setup, limited to 50-100 concurrent users
+- ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets
+- ❌ **Slow Delivery:** New reports took 3-4 weeks (had to build a new dataset each time)
+
+**Business Impact:**
+- Decisions made on inconsistent data
+- Users couldn't access reports during 4+ hour nightly window
+- Couldn't grow beyond 100 users
+- Expensive and slow to add new analytics
+
+---
+
+## The Solution
+
+I designed and built a **three-tier enterprise analytics platform** to solve this:
+
+1. **Semantic Consolidation** — Unified 50 separate datasets into 1 shared semantic model (star schema) with single source of truth
+2. **Performance Optimization** — Two-tier refresh strategy: native Power BI Incremental Refresh Policy (95% data reduction) + Enhanced Refresh API (table-by-table orchestration)
+3. **Scalable Portal** — Self-service analytics with Azure AD SSO + automatic RLS-based access control for 1000+ users
+
+---
+
+## Results
+
+**Transformation achieved:**
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|------------|
-| **Refresh Duration** | 4 hours 15 min | 20 minutes | 92% improvement |
+| **Refresh Duration** | 4 hours 15 min | 20 minutes | 92% faster |
 | **Reports** | 50 fragmented | 20 consolidated | 60% reduction |
 | **Datasets** | 50 individual | 1 semantic model | 100% consolidation |
-| **Success Rate** | 85% | 99% | 14% improvement |
-| **Duplicate Refreshes** | 50 daily | Eliminated | 100% eliminated |
-| **Query Speed** | 8-12 sec | 1-2 sec | 87% improvement |
-| **Dashboard Load** | 30-45 sec | 3-5 sec | 91% improvement |
-| **Portal Capacity** | Manual | 1000+ users | Enterprise-scale |
+| **Concurrent Users** | 50-100 | 1000+ | 20x capacity |
+| **Query Performance** | 8-12 sec | 1-2 sec | 87% faster |
+| **Availability** | 81% (4h downtime) | 100% (24/7) | Always accessible |
+| **Database Load** | 100% | 10% | 90% reduction |
+
+**Verified Annual Impact:**
+- **Cost Savings:** ₹17 Lakhs/year (Portal development avoided + PBI capacity optimization)
+- **Business Agility:** 4x faster refresh cycles (daily → 3-4x daily)
+- **User Capacity:** 20x increase (50-100 → 1000+)
+- **Uptime:** 100% (non-blocking refresh vs. 4-hour nightly downtime)
 
 ---
 
-## Code Samples — Proof of Implementation
+## How It Works
 
-**See `/code-samples/` folder for actual working code:**
+### Architecture at a Glance
 
-| Artifact | What It Proves | Lines |
-|----------|---|---|
-| **[01-embed-token-generation.py](/code-samples/01-embed-token-generation.py)** | Built portal with RLS security | 230 |
-| **[02-table-by-table-refresh-api.py](/code-samples/02-table-by-table-refresh-api.py)** | Orchestrated 92% refresh improvement | 570 |
-| **[03-dax-time-intelligence-offset.dax](/code-samples/03-dax-time-intelligence-offset.dax)** | Advanced DAX beyond standard functions | 500+ |
-| **[04-incremental-refresh-config.md](/code-samples/04-incremental-refresh-config.md)** | Configured Power BI native optimization | 280 |
+```
+BEFORE: Fragmented                AFTER: Unified
+────────────────────────────────────────────────────────────────
+50 Reports  →  50 Datasets       20 Reports  →  1 Semantic Model
+(duplication,                     (consolidation,
+inconsistency,                    consistency,
+manual access,                    automatic RLS,
+4h downtime)                      20m refresh,
+                                  1000+ users)
+```
 
-**[→ Full code-samples README](/code-samples/README.md)** explaining each artifact
+### Three-Tier Implementation
+
+**Tier 1: Data Consolidation (Semantic Model)**
+- Unified 50 independent datasets into 1 star schema
+- Conformed dimensions (DimDate, DimDepartment, DimUser, DimProduct)
+- Fact tables (FactSales, FactReporting)
+- Department-level and user-level RLS rules
+- 100+ enterprise measures using offset-based DAX time intelligence
+
+**Tier 2: Refresh Optimization (92% Improvement)**
+- Incremental Refresh Policy: 2 years historical (frozen) + 30 days incremental (daily refresh) = 95% data reduction
+- Enhanced Refresh API: Table-by-table orchestration (dimensions first, facts after)
+- Per-table monitoring and failure isolation
+- Combined result: 4h 15m → 20 minutes
+
+**Tier 3: Portal with Automatic RLS (1000+ Users)**
+- Azure AD SSO (no separate credentials)
+- Automatic RLS based on user department and role
+- Service principal with secure, time-limited tokens
+- Scalable to 1000+ concurrent users, 99.9% uptime
+- Complete audit trail for compliance
 
 ---
 
-## Architecture Transformation
+## Reading Guide
 
-### TRADITIONAL DISTRIBUTED APPROACH (BEFORE)
+**New to this project?**  
+→ Start with [BUSINESS_IMPACT.md](BUSINESS_IMPACT.md) (understand the full context, business outcomes, and ROI)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                   FRAGMENTED ARCHITECTURE                       │
-│                                                                  │
-│  50 POWER BI REPORTS                                            │
-│  ├─ Report 1  →  Dataset 1  →  ┐                              │
-│  ├─ Report 2  →  Dataset 2  →  │                              │
-│  ├─ Report 3  →  Dataset 3  →  │  SAME DATA                  │
-│  ├─ Report 4  →  Dataset 4  →  │  DUPLICATED                 │
-│  ├─ Report 5  →  Dataset 5  →  │  50 TIMES                   │
-│  ├─ ...                          │                              │
-│  └─ Report 50 →  Dataset 50 → ┘                              │
-│                                                                  │
-│                    SQL SERVER TABLES                            │
-│                                                                  │
-│  CHALLENGES:                                                   │
-│     • Data duplication (50 copies of same data)                │
-│     • All 50 datasets refresh daily (wasteful)                 │
-│     • 50 different metric definitions (inconsistent)           │
-│     • Metrics in Report 1 ≠ Metrics in Report 2               │
-│     • 4+ hour refresh cycles (infrastructure strain)           │
-│     • Manual access control (governance nightmare)             │
-│     • Difficult to add new reports (must create dataset)       │
-│     • High operational overhead                                │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Want to understand the architecture?**  
+→ [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) (visual system transformation with 6 detailed diagrams)
+
+**Technical deep-dives:**
+
+| Document | Focus | Duration |
+|----------|-------|----------|
+| [semantic-architecture.md](semantic-architecture.md) | Data model design (star schema, dimensions, facts, RLS) | 5 min |
+| [refresh-strategy.md](refresh-strategy.md) | Two-tier optimization (incremental refresh + API orchestration) | 5 min |
+| [portal-architecture.md](portal-architecture.md) | Portal design (Azure AD, tokens, 1000+ user scaling) | 5 min |
+
+**Hiring/Interview Prep - Common Questions:**
+- "Walk me through your architecture" → [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)
+- "What's your biggest technical achievement?" → [refresh-strategy.md](refresh-strategy.md) (92% performance improvement)
+- "How did you scale to 1000+ users?" → [portal-architecture.md](portal-architecture.md) + [BUSINESS_IMPACT.md](BUSINESS_IMPACT.md)
+- "Show me your code" → [code-samples/](code-samples/) folder
+- "What business impact did this have?" → [BUSINESS_IMPACT.md](BUSINESS_IMPACT.md) (₹17 Lakhs verified savings)
 
 ---
 
-### CENTRALIZED SEMANTIC MODEL APPROACH (AFTER)
+## Implementation Highlights
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                 CENTRALIZED ARCHITECTURE                        │
-│                                                                  │
-│           ┌─────────────────────────────────────┐              │
-│           │  CENTRALIZED SEMANTIC MODEL         │              │
-│           │  (Power BI - Star Schema)          │              │
-│           │                                     │              │
-│           │  DIMENSIONS:                        │              │
-│           │  • DimDate (with hierarchies)      │              │
-│           │  • DimDepartment (organization)    │              │
-│           │  • DimUser (access control)        │              │
-│           │  • DimMetric (categorization)      │              │
-│           │                                     │              │
-│           │  FACTS:                             │              │
-│           │  • FactReporting                    │              │
-│           │  • FactTransactions                │              │
-│           │                                     │              │
-│           │  DAX MEASURES:                      │              │
-│           │  • YoY Growth, Variance, etc.      │              │
-│           │  • 50-100+ Calculations (ONCE)     │              │
-│           │                                     │              │
-│           │  RLS RULES:                         │              │
-│           │  • Department-level filtering      │              │
-│           │  • User-level filtering             │              │
-│           │  • Centralized & Consistent        │              │
-│           └──────────────┬──────────────────────┘              │
-│                          │                                      │
-│                          ↓                                      │
-│           ┌──────────────────────────┐                        │
-│           │  20 REPORTS              │                        │
-│           │  (All using same model)  │                        │
-│           │                          │                        │
-│           │  ✓ Consistent metrics    │                        │
-│           │  ✓ Same RLS rules        │                        │
-│           │  ✓ Unified data          │                        │
-│           └──────────────┬───────────┘                        │
-│                          │                                      │
-│                          ↓                                      │
-│           ┌──────────────────────────┐                        │
-│           │  ANALYTICS PORTAL        │                        │
-│           │                          │                        │
-│           │  • Azure AD SSO          │                        │
-│           │  • Dept-level filtering  │                        │
-│           │  • User-level access     │                        │
-│           │  • 1000+ users           │                        │
-│           └──────────────────────────┘                        │
-│                                                                  │
-│                  SQL SERVER TABLES                              │
-│                                                                  │
-│  ✅ BENEFITS:                                                   │
-│     ✓ Single data source (no duplication)                      │
-│     ✓ One metric definition (100% consistent)                  │
-│     ✓ Centralized RLS (governance)                             │
-│     ✓ 20-minute refresh (efficient)                            │
-│     ✓ Easy to add reports (reuse model)                        │
-│     ✓ Enterprise-grade security                                │
-│     ✓ Scalable & maintainable                                  │
-│     ✓ Better cost efficiency                                   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+### 1. Semantic Data Model (Star Schema)
+
+**Consolidation:** 50 independent datasets → 1 shared semantic model
+
+**Design:**
+- **Dimension Tables:** DimDate, DimDepartment, DimUser, DimProduct  
+- **Fact Tables:** FactSales, FactReporting  
+- **RLS Rules:** Department-level and user-level automatic filtering  
+- **Analytics:** 100+ enterprise measures using offset-based DAX time intelligence  
+
+→ See [semantic-architecture.md](semantic-architecture.md) for complete model documentation
+
+### 2. Two-Tier Refresh Optimization (92% Improvement)
+
+**Tier 1: Incremental Refresh Policy**
+- Historical data (2 years): Frozen, never refreshed
+- Incremental data (30 days): Refreshed daily
+- Result: 95% data volume reduction
+
+**Tier 2: Enhanced Refresh API**
+- Table-by-table orchestration (dimensions first, facts after)
+- Per-table failure isolation and monitoring
+- Automatic retry logic
+- Result: Constant 20-minute refresh duration
+
+**Combined:** 4h 15m → 20 minutes (92% faster)
+
+→ See [refresh-strategy.md](refresh-strategy.md) for complete strategy documentation
+
+### 3. Portal with Automatic RLS (1000+ Users)
+
+**User Authentication:** Azure AD SSO (no separate credentials)  
+**Access Control:** Automatic RLS based on user's department and role  
+**Token Generation:** Service principal with secure, time-limited tokens  
+**Scalability:** 1000+ concurrent users, 99.9% uptime  
+**Audit Trail:** Complete logging for compliance  
+
+→ See [portal-architecture.md](portal-architecture.md) for complete portal documentation
 
 ---
 
-## ⭐ Semantic Model: Star Schema Design
+## Code Samples
 
-```
-                          ┌──────────────┐
-                          │   DIM_DATE   │
-                          ├──────────────┤
-                          │ DateKey (PK) │
-                          │ Date         │
-                          │ Year, Month  │
-                          │ Quarter, Week│
-                          │ DayOfWeek    │
-                          │ IsWeekend    │
-                          └──────┬───────┘
-                                 │
-                  ┌──────────────┼──────────────┐
-                  │              │              │
-        ┌─────────▼────────┐     │    ┌─────────▼────────┐
-        │  DIM_DEPARTMENT  │     │    │   DIM_USER       │
-        ├──────────────────┤     │    ├──────────────────┤
-        │ DepartmentKey(PK)│     │    │ UserKey (PK)     │
-        │ Department ID    │     │    │ UserID           │
-        │ Dept Name        │     │    │ Full Name        │
-        │ Dept Head        │     │    │ Department (FK)  │
-        │ Cost Center      │     │    │ Manager ID       │
-        │ Business Area    │     │    │ Role             │
-        └────────┬─────────┘     │    │ Access Level     │
-                 │               │    └────────┬─────────┘
-                 └───────────────┼────────────┘
-                                 │
-                        ┌────────▼────────┐
-                        │ FACT_REPORTING  │
-                        ├─────────────────┤
-                        │ ReportingKey(PK)│
-                        │ DateKey (FK)    │
-                        │ DepartmentKey(F)│
-                        │ UserKey (FK)    │
-                        │ MetricKey (FK)  │
-                        │ MetricValue     │
-                        │ MetricTarget    │
-                        │ Variance        │
-                        │ Timestamp       │
-                        └────────┬────────┘
-                                 │
-                        ┌────────▼──────────┐
-                        │  DIM_METRIC       │
-                        ├───────────────────┤
-                        │ MetricKey (PK)    │
-                        │ MetricID          │
-                        │ Metric Name       │
-                        │ Category          │
-                        │ Type              │
-                        │ Unit of Measure   │
-                        └───────────────────┘
+This repository includes actual production code demonstrating:
 
-KEY BENEFITS:
-✓ Shared across ALL 20 reports
-✓ Conformed dimensions (consistent)
-✓ Star schema (optimized for analytics)
-✓ Single metric definition
-✓ Centralized RLS rules
-✓ Easy to maintain & extend
-```
+1. **Portal Security** — Embed token generation with RLS context (240 lines)
+2. **Performance Optimization** — Table-by-table refresh orchestration (615 lines)
+3. **Analytics** — Custom DAX time intelligence using offset method (729 lines)
+4. **Infrastructure** — Power BI incremental refresh configuration (399 lines)
+
+[→ View all code samples and implementations](code-samples/)
 
 ---
 
-## 🔄 Refresh Strategy: Two-Tier Optimization
+## Technology Stack
 
-### LEGACY FULL REFRESH (4+ HOURS)
+**Analytics Platform:**
+- Power BI Service (Premium capacity)
+- Star schema semantic modeling
+- Incremental Refresh Policy
+- Enhanced Refresh API
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│  Step 1: DELETE ALL DATA                                       │
-│  └─ Clear all 50 datasets completely                          │
-│                                                                 │
-│  Step 2: RE-IMPORT EVERYTHING                                  │
-│  └─ Import 2+ years of historical data (all unchanged)        │
-│  └─ Import 30 days of incremental data                        │
-│  └─ Duration: ~2.5 hours                                      │
-│                                                                 │
-│  Step 3: RECALCULATE ALL                                       │
-│  └─ Rebuild all aggregations                                  │
-│  └─ Recalculate all measures                                  │
-│  └─ Duration: ~1 hour                                         │
-│                                                                 │
-│  Step 4: VALIDATE & INDEX                                      │
-│  └─ Duration: ~0.5 hours                                      │
-│                                                                 │
-│  ❌ TOTAL: 4+ HOURS                                            │
-│  ❌ If ANY step fails: Entire process must retry              │
-│  ❌ All infrastructure heavily utilized                        │
-│                                                                 │
-└────────────────────────────────────────────────────────────────┘
-```
+**Security & Authentication:**
+- Azure Active Directory
+- MSAL (Microsoft Authentication Library)
+- Service Principal authentication
+- Row-Level Security (RLS) rules
+
+**Orchestration & Automation:**
+- Python (refresh API orchestration)
+- Power BI REST API
+- HTTP resilience patterns (retry logic, throttling)
+
+**Analytics & Time Intelligence:**
+- Custom DAX (offset-based method)
+- 100+ enterprise measures
+- Fiscal calendar flexibility
 
 ---
 
-### ✅ NEW TWO-TIER REFRESH (20 MINUTES)
+## Project Timeline & Status
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  TIER 1: POWER BI INCREMENTAL REFRESH POLICY                  │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │  Historical Data (2+ years)  │ Incremental (30 days)│     │
-│  │  ┌──────────────────────┐    │ ┌──────────────────┐ │     │
-│  │  │ FROZEN               │    │ │ REFRESH DAILY   │ │     │
-│  │  │ • No import          │    │ │ • Import only   │ │     │
-│  │  │ • No refresh         │    │ │   new data      │ │     │
-│  │  │ • Already in model   │    │ │ • ~95% volume   │ │     │
-│  │  │                      │    │ │   reduction     │ │     │
-│  │  └──────────────────────┘    │ └──────────────────┘ │     │
-│  │                                                       │     │
-│  │  Result: Partition elimination handles 95% of work  │     │
-│  │  Time: ~2 minutes                                   │     │
-│  └──────────────────────────────────────────────────────┘     │
-│                                                                 │
-│  TIER 2: ENHANCED REFRESH API - TABLE-BY-TABLE                │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │                                                       │     │
-│  │  DimDate         ──→   5 min  ✓ COMPLETE            │     │
-│  │  DimDepartment   ──→   2 min  ✓ COMPLETE            │     │
-│  │  DimUser         ──→   3 min  ✓ COMPLETE            │     │
-│  │  FactReporting   ──→  45 min  ✓ COMPLETE (isolated) │     │
-│  │  FactTransactions──→  10 min  ✓ COMPLETE            │     │
-│  │                                                       │     │
-│  │  IF FactReporting FAILS:                             │     │
-│  │  └─ Only FactReporting retries                       │     │
-│  │  └─ Other 4 tables already live & producing data    │     │
-│  │  └─ Users get 80% fresh data (4/5 tables)           │     │
-│  │                                                       │     │
-│  │  Result: Complete visibility + failure isolation     │     │
-│  │  Time: ~20 minutes total                             │     │
-│  └──────────────────────────────────────────────────────┘     │
-│                                                                 │
-│  ✅ TOTAL: 20 MINUTES (92% FASTER)                            │
-│  ✅ One table failure ≠ total failure                         │
-│  ✅ Granular performance monitoring                           │
-│  ✅ Infrastructure utilization optimized                      │
-│                                                                 │
-└────────────────────────────────────────────────────────────────┘
-```
+**Duration:** 8 weeks (January-March 2026)  
+**Status:** Production (active since May 28, 2026)  
+**Users Served:** 1000+  
+**Uptime:** 99.9%  
+**Refresh Success Rate:** 99%+  
+
+→ See [BUSINESS_IMPACT.md](BUSINESS_IMPACT.md) for detailed timeline and execution phases
 
 ---
 
-## 🌐 Portal Access Control Flow
+## Key Achievements
 
-```
-USER ACCESSES PORTAL (portal.company.com)
-            │
-            ↓
-    ┌──────────────────────┐
-    │  AZURE AD LOGIN      │
-    │  (Single Sign-On)    │
-    │                      │
-    │  User: sjkumar       │
-    │  Dept: Sales         │
-    │  Role: Manager       │
-    └──────────┬───────────┘
-               │
-               ↓
-    ┌──────────────────────┐
-    │  IDENTIFY USER       │
-    │  └─ Department: Sales│
-    │  └─ Role: Manager    │
-    │  └─ Access Lvl: 2    │
-    └──────────┬───────────┘
-               │
-               ↓
-    ┌──────────────────────────────┐
-    │  REPORT DISCOVERY ENGINE     │
-    │  Query: Show reports for     │
-    │  • Department = Sales        │
-    │  • Access Level >= 2         │
-    │  • Role = Manager            │
-    └──────────┬───────────────────┘
-               │
-               ↓
-    ┌──────────────────────────────┐
-    │  AVAILABLE REPORTS:          │
-    │  ✓ Sales Dashboard           │
-    │  ✓ Sales Performance         │
-    │  ✓ Regional Analysis         │
-    │  ✗ Finance Reports (hidden)  │
-    │  ✗ HR Data (hidden)          │
-    │  ✗ Board Reports (hidden)    │
-    └──────────┬───────────────────┘
-               │
-         User Selects:
-         Sales Dashboard
-               │
-               ↓
-    ┌──────────────────────┐
-    │  PERMISSION CHECK    │
-    │  ✓ User has access   │
-    │  ✓ Continue          │
-    └──────────┬───────────┘
-               │
-               ↓
-    ┌──────────────────────────────┐
-    │  GENERATE EMBED TOKEN        │
-    │  WITH RLS CONTEXT            │
-    │  • Department = Sales        │
-    │  • UserID = sjkumar          │
-    │  • Role = Manager            │
-    └──────────┬───────────────────┘
-               │
-               ↓
-    ┌──────────────────────────────┐
-    │  EMBED POWER BI REPORT       │
-    │  (Secure token + RLS applied)│
-    │                              │
-    │  RLS Automatic Filtering:    │
-    │  ✓ Show: Sales data only     │
-    │  ✓ Hide: Finance data        │
-    │  ✓ Show: Manager-level view  │
-    │  ✓ Hide: Confidential data   │
-    └──────────┬───────────────────┘
-               │
-               ↓
-    ┌──────────────────────────────┐
-    │  USER SEES FILTERED REPORT   │
-    │  • Sales dept metrics        │
-    │  • Team member data          │
-    │  • Appropriate detail level  │
-    │  • No access to other depts  │
-    └──────────────────────────────┘
-```
+**Performance:** 92% refresh improvement (4h 15m → 20 min)  
+**Consolidation:** 60% reduction in reports (50 → 20), 100% consolidation of datasets (50 → 1)  
+**Scalability:** 20x user capacity increase (50-100 → 1000+)  
+**Automation:** 100% automatic RLS (zero manual access setup)  
+**Efficiency:** 70% reduction in operational maintenance burden  
+
+**Verified Annual Impact:**
+- Direct Cost Savings: ₹17 Lakhs/year (Portal development avoided + PBI capacity optimization)
+- Business Agility: 4x faster refresh cycles (daily → 3-4x daily)
+- 100% Uptime: Non-blocking refresh vs. 4-hour nightly downtime
+
+→ See [BUSINESS_IMPACT.md](BUSINESS_IMPACT.md) for complete business outcomes
 
 ---
 
-## 📊 Performance Improvements Visualization
+## Author
 
-```
-REFRESH DURATION IMPROVEMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-BEFORE:  ████████████████████████████████████████████  4 HOURS
-AFTER:   ████  20 MINUTES
-
-IMPROVEMENT: ↓ 92% FASTER
-
-
-QUERY EXECUTION TIME IMPROVEMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-BEFORE:  ██████████  8-12 seconds
-AFTER:   ██  1-2 seconds
-
-IMPROVEMENT: ↓ 87% FASTER
-
-
-DASHBOARD LOAD TIME IMPROVEMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-BEFORE:  ██████████████████  30-45 seconds
-AFTER:   ██  3-5 seconds
-
-IMPROVEMENT: ↓ 91% FASTER
-
-
-DATASETS & CONSOLIDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-BEFORE:  50 Individual Datasets
-         ██████████████████████████████████████████████ 50
-
-AFTER:   1 Shared Semantic Model
-         ██ 1
-
-IMPROVEMENT: ✓ 100% CONSOLIDATED
-```
+**Sai Neeraj Kumar**  
+Principal Analytics Engineer | Enterprise BI Architecture  
+Project: Insights 2.0 - Enterprise Analytics Platform Modernization  
+Date: May 28, 2026
 
 ---
 
-## 🏢 Architecture Layers
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│ 4️⃣  PRESENTATION LAYER                                         │
-│     ├─ 20 Standardized Power BI Reports                       │
-│     ├─ Embedded in Portal                                      │
-│     └─ Department-Specific Dashboards                         │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ 3️⃣  SEMANTIC LAYER (Centralized)                              │
-│     ├─ Star Schema Design                                      │
-│     ├─ Dimensions + Fact Tables                               │
-│     ├─ DAX Measures (50-100+)                                 │
-│     ├─ RLS Rules (Dept + User Level)                          │
-│     └─ Single Source of Truth                                 │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ 2️⃣  REFRESH LAYER (Two-Tier Orchestration)                    │
-│     ├─ Power BI Incremental Refresh Policy                    │
-│     ├─ Enhanced Refresh API (Python)                          │
-│     ├─ Table-by-Table Refresh                                 │
-│     ├─ Performance Monitoring                                 │
-│     └─ Error Handling & Recovery                              │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ 1️⃣  DATA WAREHOUSE LAYER                                       │
-│     ├─ SQL Server Tables                                       │
-│     ├─ Dimensions                                             │
-│     ├─ Facts with Partitions                                  │
-│     ├─ Incremental Load Strategy                              │
-│     └─ Data Quality Validation                                │
-│                                                                 │
-└────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 💡 Key Design Decisions
-
-**Why Semantic Consolidation?**
-> 50 individual datasets led to duplicate data, inconsistent calculations, and governance challenges. A centralized semantic model provides single source of truth, eliminates redundancy, and simplifies maintenance.
-
-**Why Two-Tier Refresh?**
-> Combining Power BI's incremental refresh (handles 95% of volume reduction efficiently) with Enhanced Refresh API (provides granular control and monitoring) achieves both speed and visibility that neither approach alone provides.
-
-**Why Portal-Based Distribution?**
-> Centralized portal with integrated access control is more scalable and maintainable than scattered reports with individual permissions. Automated department and user-level filtering via RLS ensures consistent data access policies.
-
-**Why RLS at Semantic Layer?**
-> Defining RLS rules once in semantic model ensures consistency across all reports, eliminates duplication, and provides single point of control for access policies.
-
----
-
-## 💻 Technology Stack
-
-```
-POWER BI & ANALYTICS          BACKEND & AUTOMATION
-├─ Power BI Desktop            ├─ Python (Orchestration)
-├─ Power BI Service            ├─ SQL Server (Warehouse)
-├─ DAX                         ├─ Flask (Portal)
-├─ Power Query                 └─ Azure SQL (Data)
-├─ Incremental Refresh
-└─ Enhanced Refresh API        CLOUD & INFRASTRUCTURE
-                               ├─ Microsoft Azure
-SECURITY & AUTHENTICATION      ├─ Azure Container Apps
-├─ Azure AD (SSO)              ├─ Azure Front Door
-├─ Row-Level Security (RLS)    └─ Azure Backup
-├─ Role-Based Access (RBAC)
-└─ Audit Logging               DEVELOPMENT
-                               ├─ Claude AI (Portal Dev)
-                               └─ Git (Version Control)
-```
-
----
-
-## 📚 Documentation
-
-- 📄 [Semantic Architecture](semantic-architecture.md) — Data model design and implementation
-- 📄 [Refresh Strategy](refresh-strategy.md) — Two-tier refresh approach and optimization  
-- 📄 [Portal Architecture](portal-architecture.md) — Portal design and access control implementation
-
----
-
-## 📧 Contact
-
-**saineeraj.kumar@samunnati.com**
-
----
-
-<div align="center">
-
-**Status:** ✅ Production | **Version:** 2.0 | **Last Updated:** May 2026
-
-</div>
+**For detailed architecture diagrams and technical deep-dives, see [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)**
