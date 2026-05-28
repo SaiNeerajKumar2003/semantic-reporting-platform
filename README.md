@@ -87,9 +87,9 @@ BEFORE: Fragmented                AFTER: Unified
 50 Reports  →  50 Datasets       20 Reports  →  1 Semantic Model
 (duplication,                     (consolidation,
 inconsistency,                    consistency,
-manual access,                    automatic RLS,
-4h downtime)                      20m refresh,
-                                  1000+ users)
+scattered RLS,                    unified RLS,
+4h downtime,                      20m refresh,
+90% capacity)                     15% capacity)
 ```
 
 ### Three-Tier Implementation
