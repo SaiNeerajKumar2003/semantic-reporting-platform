@@ -92,7 +92,8 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 | Metric | Before | After | Improvement |
 |--------|--------|-------|------------|
 | **Refresh Duration** | 4h 15m | 20 min | 92% faster |
-| **User Capacity** | 50-100 | 1000+ | 20x increase |
+| **Portal Ownership** | External vendor managed | In-house managed | Full control, independence |
+| **Portal Users** | ~500 (vendor) | ~500 (in-house) | Same scale, full control |
 | **Data Freshness** | Daily | 3-4x daily | 4x more current |
 | **Report Creation** | 3-4 weeks | 3-4 days | 90% faster |
 | **Embedded Capacity Usage** | 90% (over-capacity) | 15% (optimized) | 75% reduction |
@@ -103,9 +104,9 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 **Direct Cost Savings: ₹17 Lakhs/year**
 
 **1. Portal Development Cost Avoided: ₹8 Lakhs/year**
-- External vendor would charge: ₹2 Lakhs (development) + ₹50K/month (maintenance) = ₹8 Lakhs/year
-- Your approach: Built and maintained using Claude Pro
-- **Savings:** ₹8 Lakhs/year in vendor costs
+- Previous: External vendor charged ₹2 Lakhs (development) + ₹50K/month (maintenance) = ₹8 Lakhs/year (for ~500 employees)
+- New approach: Built and maintained in-house using Claude Pro
+- **Benefit:** ₹8 Lakhs/year cost savings + full control (no vendor dependency for changes)
 
 **2. Embedded Capacity Optimization: ₹9 Lakhs/year**
 - Before optimization: ₹1.2 Lakhs/month (₹14.4 Lakhs/year) at 90% capacity utilization

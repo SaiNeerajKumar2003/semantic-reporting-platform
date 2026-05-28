@@ -13,7 +13,7 @@ An enterprise was running **50 fragmented Power BI reports** with **50 separate 
 - ❌ **Excessive Database Load:** 50 separate refresh jobs independently refreshing the same tables, causing database overload and resource contention
 - ❌ **Morning Refresh Overhead:** 4-hour morning refresh window (typically 2-6 AM) consuming peak database capacity and I/O
 - ❌ **Query Performance Degradation:** During refresh cycles, database load spikes caused slow query performance for active users
-- ❌ **Over-Capacity Usage:** Embedded Capacity near 90% utilization due to inefficient refresh patterns and redundant data loads; scaling blocked at 50-100 concurrent users
+- ❌ **Over-Capacity Usage:** Embedded Capacity near 90% utilization due to inefficient refresh patterns and redundant data loads
 - ❌ **Scattered RLS Management:** RLS rules duplicated across 50 datasets; same user needed RLS configured separately in each dataset they accessed
 - ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets and redundant refresh/RLS operations
 - ❌ **Slow Delivery:** New reports took 3-4 weeks (had to create new dataset + configure RLS from scratch)
@@ -33,7 +33,7 @@ I designed and built a **three-tier enterprise analytics platform** to solve thi
 
 1. **Semantic Consolidation** — Unified 50 separate datasets into 1 shared semantic model (star schema) with single source of truth
 2. **Performance Optimization** — Two-tier refresh strategy: native Power BI Incremental Refresh Policy (95% data reduction) + Enhanced Refresh API (table-by-table orchestration)
-3. **Scalable Portal** — Self-service analytics with Azure AD SSO + automatic RLS-based access control for 1000+ users
+3. **In-House Portal** — Replaced external vendor portal with in-house solution; Azure AD SSO + automatic RLS for ~500 employees, full control with no vendor dependency
 
 ---
 
@@ -46,15 +46,16 @@ I designed and built a **three-tier enterprise analytics platform** to solve thi
 | **Refresh Duration** | 4 hours 15 min | 20 minutes | 92% faster |
 | **Reports** | 50 fragmented | 20 consolidated | 60% reduction |
 | **Datasets** | 50 individual | 1 semantic model | 100% consolidation |
-| **Concurrent Users** | 50-100 | 1000+ | 20x capacity |
+| **Portal Control** | External vendor managed (no control) | In-house managed (full control) | Complete independence |
+| **Concurrent Users** | ~500 (vendor portal) | ~500 (in-house portal) | Same scale, full control |
 | **Query Performance** | 8-12 sec | 1-2 sec | 87% faster |
 | **Embedded Capacity Usage** | 90% (over-capacity) | 15% (optimized) | 75% reduction |
 | **Database Load** | 100% | 10% | 90% reduction |
 
 **Verified Annual Impact:**
-- **Cost Savings:** ₹17 Lakhs/year (Portal development avoided + Embedded Capacity optimization from 90% → 15% utilization)
+- **Cost Savings:** ₹17 Lakhs/year (Portal development avoided by building in-house + Embedded Capacity optimization from 90% → 15% utilization)
+- **Vendor Independence:** Full control over portal with no external dependencies (same 500 employees, but now internally managed)
 - **Business Agility:** 4x faster refresh cycles (daily → 3-4x daily)
-- **User Capacity:** 20x increase (50-100 → 1000+ concurrent users)
 - **Database Performance:** 90% reduction in database load due to consolidated refresh strategy
 
 ---
@@ -89,11 +90,12 @@ manual access,                    automatic RLS,
 - Per-table monitoring and failure isolation
 - Combined result: 4h 15m → 20 minutes
 
-**Tier 3: Portal with Automatic RLS (1000+ Users)**
+**Tier 3: Portal with Automatic RLS (~500 Users, Full Control)**
+- Replaced external vendor portal with in-house solution
 - Azure AD SSO (no separate credentials)
 - Automatic RLS based on user department and role
 - Service principal with secure, time-limited tokens
-- Scalable to 1000+ concurrent users, 99.9% uptime
+- Full control with no vendor dependency for changes
 - Complete audit trail for compliance
 
 ---
