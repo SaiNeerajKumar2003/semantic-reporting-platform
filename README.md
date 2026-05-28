@@ -6,7 +6,11 @@ An enterprise analytics infrastructure crisis became an opportunity to build som
 
 ## The Problem
 
-An enterprise was running **50 fragmented Power BI reports** with **50 separate datasets**, creating a broken analytics landscape:
+An enterprise faced **two critical infrastructure challenges:**
+
+### Problem 1: Semantic Modeling Crisis (70% of effort)
+
+Running **50 fragmented Power BI reports** with **50 separate datasets**, creating a broken analytics landscape:
 
 **What Was Broken:**
 - ❌ **Data Inconsistency:** Same metrics showed different numbers across reports (no single source of truth)
@@ -18,22 +22,35 @@ An enterprise was running **50 fragmented Power BI reports** with **50 separate 
 - ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets and redundant refresh/RLS operations
 - ❌ **Slow Delivery:** New reports took 3-4 weeks (had to create new dataset + configure RLS from scratch)
 
-**Business Impact:**
-- Decisions made on inconsistent data
-- Database performance degradation during morning refresh window
-- Over-capacity usage driving up Power BI infrastructure costs (₹1.2 Lakhs/month)
-- Couldn't scale beyond 100 users due to capacity constraints
-- Expensive and slow to add new analytics
+**Impact:** Decisions made on inconsistent data, database performance issues, infrastructure cost overruns (₹1.2 Lakhs/month)
+
+### Problem 2: Portal Vendor Lock-in (30% of effort)
+
+External vendor managed the analytics portal for ~500 employees:
+
+**What Was Broken:**
+- ❌ **Vendor Dependency:** No control over portal; any change required vendor involvement
+- ❌ **High Cost:** ₹8 Lakhs/year (₹2 Lakhs development + ₹50K/month maintenance)
+- ❌ **Change Bottleneck:** Feature requests and bug fixes dependent on vendor timeline
+- ❌ **No Strategic Control:** Infrastructure decisions made by external party
+
+**Impact:** Strategic bottleneck, high recurring costs, limited agility for analytics feature improvements
 
 ---
 
 ## The Solution
 
-I designed and built a **three-tier enterprise analytics platform** to solve this:
+I designed and built a **comprehensive three-tier enterprise analytics platform** to solve both problems:
+
+### Solution 1: Unified Semantic Architecture (70% of solution)
 
 1. **Semantic Consolidation** — Unified 50 separate datasets into 1 shared semantic model (star schema) with single source of truth
 2. **Performance Optimization** — Two-tier refresh strategy: native Power BI Incremental Refresh Policy (95% data reduction) + Enhanced Refresh API (table-by-table orchestration)
-3. **In-House Portal** — Replaced external vendor portal with in-house solution; Azure AD SSO + automatic RLS for ~500 employees, full control with no vendor dependency
+3. **Unified RLS Management** — RLS rules configured once at semantic model level, automatically applied to all 20 reports
+
+### Solution 2: In-House Portal (30% of solution)
+
+4. **Portal Independence** — Replaced external vendor portal with in-house solution; Azure AD SSO + automatic RLS for ~500 employees, full control with no vendor dependency
 
 ---
 

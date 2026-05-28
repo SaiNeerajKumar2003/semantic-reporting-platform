@@ -20,7 +20,9 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 
 ## Business Problem
 
-### Before: Analytics Infrastructure Crisis
+An enterprise faced **two critical infrastructure challenges** (70% semantic modeling, 30% portal):
+
+### Problem 1: Semantic Modeling Crisis (70% of effort)
 
 **The Situation:**
 - 50 fragmented Power BI reports, each owned by different department
@@ -40,17 +42,34 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 - **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets, redundant refresh operations, and scattered RLS rules
 - **Report Delivery:** New reports took 3-4 weeks (required creating new dataset + configuring RLS from scratch)
 
-**Business Impact:**
+**Business Impact (Problem 1):**
 - ❌ Decisions made on inconsistent data
 - ❌ Database resource contention during morning refresh window affecting query performance
 - ❌ Excessive infrastructure costs (₹1.2 Lakhs/month Embedded Capacity due to over-capacity usage)
-- ❌ Limited to 100 users (couldn't grow due to capacity constraints)
 - ❌ Expensive to add new reports (3-4 weeks)
 - ❌ No self-service analytics capability
 
+### Problem 2: Portal Vendor Lock-in (30% of effort)
+
+**The Situation:**
+- External vendor managed analytics portal for ~500 employees
+- No in-house control or capability to modify platform
+
+**Operational Challenges:**
+- **Vendor Dependency:** Any change required vendor involvement
+- **High Cost:** ₹8 Lakhs/year (₹2 Lakhs development + ₹50K/month maintenance)
+- **Change Bottleneck:** Feature requests dependent on vendor timeline and priorities
+- **Strategic Lock-in:** Couldn't optimize or customize without vendor support
+
+**Business Impact (Problem 2):**
+- ❌ High recurring infrastructure costs (₹8L/year for vendor portal)
+- ❌ Strategic bottleneck for analytics improvements
+- ❌ No control over feature development or optimization
+- ❌ Dependent on vendor for any changes
+
 ---
 
-## Solution: Unified Analytics Platform
+## Solution: Comprehensive Analytics Platform Modernization
 
 ### My Role & Ownership
 
@@ -64,7 +83,9 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 
 **Collaboration Context:** Worked with Power BI SMEs, database team, IT/Security, and business stakeholders. Maintained architectural responsibility throughout.
 
-### Three-Tier Strategy
+### Solution Strategy (70/30 split)
+
+#### Solution 1: Semantic Architecture Modernization (70% of effort)
 
 **Tier 1: Data Consolidation**
 - Unified 50 datasets into 1 shared semantic model
@@ -77,10 +98,19 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 - Enhanced Refresh API: Table-by-table orchestration with per-table failure isolation
 - Combined result: 20-minute refresh (vs. 4h 15m previously)
 
-**Tier 3: Portal & Access Control**
-- Self-service analytics portal with Azure AD SSO
-- Automatic RLS-based access (no manual setup)
-- Scales to 1000+ concurrent users
+**Tier 3: Unified RLS Management**
+- RLS rules configured once at semantic model level
+- Automatically applied to all 20 reports
+- No per-report RLS configuration needed
+- Single source of access control
+
+#### Solution 2: Portal Independence (30% of effort)
+
+**Tier 4: In-House Portal**
+- Replaced external vendor portal with in-house solution
+- Azure AD SSO integration for ~500 employees
+- Automatic RLS-based access control
+- Full control with no vendor dependency
 - Complete audit trail for compliance
 
 ---
