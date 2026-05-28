@@ -14,8 +14,9 @@ An enterprise was running **50 fragmented Power BI reports** with **50 separate 
 - ❌ **Morning Refresh Overhead:** 4-hour morning refresh window (typically 2-6 AM) consuming peak database capacity and I/O
 - ❌ **Query Performance Degradation:** During refresh cycles, database load spikes caused slow query performance for active users
 - ❌ **Over-Capacity Usage:** Embedded Capacity near 90% utilization due to inefficient refresh patterns and redundant data loads; scaling blocked at 50-100 concurrent users
-- ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets and redundant refresh operations
-- ❌ **Slow Delivery:** New reports took 3-4 weeks (had to create new dataset each time)
+- ❌ **Scattered RLS Management:** RLS rules duplicated across 50 datasets; same user needed RLS configured separately in each dataset they accessed
+- ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets and redundant refresh/RLS operations
+- ❌ **Slow Delivery:** New reports took 3-4 weeks (had to create new dataset + configure RLS from scratch)
 
 **Business Impact:**
 - Decisions made on inconsistent data
@@ -131,8 +132,13 @@ manual access,                    automatic RLS,
 **Design:**
 - **Dimension Tables:** DimDate, DimDepartment, DimUser, DimProduct  
 - **Fact Tables:** FactSales, FactReporting  
-- **RLS Rules:** Department-level and user-level automatic filtering  
+- **RLS Rules:** Department-level and user-level automatic filtering (configured once, applies to ALL 20 reports)
 - **Analytics:** 100+ enterprise measures using offset-based DAX time intelligence  
+
+**Critical Benefit:**
+- **Before:** Each of 50 datasets had separate RLS → same user needed RLS configured per dataset → scattered, duplicated, hard to maintain
+- **After:** RLS configured once at semantic model level → automatically applies to all 20 reports → single source of access control
+- **Impact:** 100% reduction in RLS configuration complexity, zero per-report RLS setup needed
 
 → See [semantic-architecture.md](semantic-architecture.md) for complete model documentation
 

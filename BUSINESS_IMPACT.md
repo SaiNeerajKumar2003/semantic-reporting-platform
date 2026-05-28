@@ -35,9 +35,10 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 - **Performance Degradation:** During refresh cycles, active users experienced slow query performance as database struggled with resource contention
 - **Over-Capacity Usage:** Embedded Capacity utilization at 90% causing cost overruns (₹1.2 Lakhs/month) and limiting concurrent user scaling
 - **Inefficient Refresh Pattern:** Multiple datasets refreshing the same source tables independently = redundant database hits and duplicated data loads
+- **Scattered RLS Management:** Row-Level Security rules duplicated across 50 datasets; each user needed RLS configured separately in every dataset they accessed
 - **User Capacity:** Hard-capped at 50-100 concurrent users due to Embedded Capacity constraints
-- **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets and redundant refresh operations
-- **Report Delivery:** New reports took 3-4 weeks (required creating new dataset)
+- **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets, redundant refresh operations, and scattered RLS rules
+- **Report Delivery:** New reports took 3-4 weeks (required creating new dataset + configuring RLS from scratch)
 
 **Business Impact:**
 - ❌ Decisions made on inconsistent data
@@ -177,7 +178,13 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 **From:** 50 independent reports with 50 datasets  
 **To:** 20 standardized reports from 1 semantic model
 
-**Benefit:** Eliminated metric inconsistencies, enabled self-service, reduced maintenance
+**Key Benefits:**
+- Eliminated metric inconsistencies (single source of truth)
+- Enabled self-service analytics (all reports use same model)
+- **Unified RLS Management:** RLS rules configured once at semantic model level, automatically applied to ALL 20 reports
+  - Before: Each of 50 datasets had separate RLS → same user needed RLS configured per dataset
+  - After: One RLS rule applies to all reports → 100% reduction in RLS complexity
+- Reduced maintenance burden significantly
 
 ### 2. Two-Tier Refresh Optimization
 **From:** 4h 15m full dataset refresh  
