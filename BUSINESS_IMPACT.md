@@ -177,16 +177,16 @@ An enterprise faced **two critical infrastructure challenges** (70% semantic mod
 
 ### Timeline
 
-**8-week project (January-March 2026)**
+**9-month project (May 2025 - January 2026)**
 
 | Phase | Duration | Accomplishment |
 |-------|----------|---|
-| **Planning & Design** | Week 1-2 | Architecture design, requirements gathering, stakeholder alignment |
-| **Data Modeling** | Week 2-3 | Star schema design, dimension/fact tables, RLS rules |
-| **Refresh Optimization** | Week 4-5 | Incremental refresh config, Python API orchestration |
-| **Portal Development** | Week 4-6 | Portal architecture, Azure AD integration, token generation |
-| **Testing & Validation** | Week 6-7 | Performance testing, security validation, user testing |
-| **Deployment** | Week 7-8 | Migration from 50 datasets → 1 model, user training, monitoring |
+| **Planning & Design** | Month 1-2 (May-Jun 2025) | Architecture design, requirements gathering, stakeholder alignment |
+| **Data Modeling** | Month 2-3 (Jun-Jul 2025) | Star schema design, dimension/fact tables, RLS rules |
+| **Refresh Optimization** | Month 4-5 (Aug-Sep 2025) | Incremental refresh config, Python API orchestration |
+| **Portal Development** | Month 4-7 (Aug-Oct 2025) | Portal architecture, Azure AD integration, token generation |
+| **Testing & Validation** | Month 7-8 (Oct-Nov 2025) | Performance testing, security validation, user testing |
+| **Deployment & Monitoring** | Month 8-9 (Dec 2025 - Jan 2026) | Migration from 50 datasets → 1 model, user training, monitoring |
 
 ### Challenges Overcome
 
@@ -282,9 +282,9 @@ An enterprise faced **two critical infrastructure challenges** (70% semantic mod
 
 ## Production Status
 
-**Current State (May 28, 2026)**
-- Status: Active Production
-- Users Served: 1000+
+**Current State (January 2026 onwards)**
+- Status: Active Production (went live January 2026)
+- Users Served: ~500
 - Portal Uptime: 99.9%
 - Refresh Success Rate: 99%+
 - Data Freshness: Updated 3-4 times daily
@@ -315,7 +315,7 @@ This project demonstrates capabilities highly valued in enterprise organizations
 
 **Author:** Sai Neeraj Kumar  
 **Role:** Principal Analytics Engineer  
-**Project Duration:** 8 weeks  
-**Status:** Production, May 28, 2026  
+**Project Duration:** 9 months (May 2025 - January 2026)  
+**Status:** Production, active since January 2026  
 
 **For technical details:** See [README.md](README.md) and [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)
