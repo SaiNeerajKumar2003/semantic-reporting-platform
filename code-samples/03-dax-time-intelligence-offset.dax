@@ -1,0 +1,730 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// DAX Time Intelligence — Offset Method Implementation
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Project: Insights 2.0 - Enterprise Analytics Platform Modernization
+// Author: Sai Neeraj Kumar
+//
+// Purpose:
+//   Instead of using complex built-in DAX functions (SAMEPERIODLASTYEAR,
+//   DATEADD, TOTALYTD), this model uses integer-based offset columns from
+//   the calendar table. This provides:
+//
+//   ✓ Simpler, more readable DAX
+//   ✓ Easier debugging and maintenance
+//   ✓ Fiscal-calendar flexibility
+//   ✓ Consistent, reusable patterns
+//   ✓ Better performance in complex scenarios
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 1: CALENDAR TABLE STRUCTURE
+// ═══════════════════════════════════════════════════════════════════════════
+
+// The DimCalendar table includes offset columns that represent relative
+// positions from the current period. These replace complex DAX functions.
+
+/*
+DimCalendar Table Columns:
+
+├─ Date (PK)
+├─ Year
+├─ Month
+├─ Day
+├─ WeekNumber
+│
+├─ FiscalYear
+├─ FiscalMonth
+├─ FiscalQuarter
+├─ FiscalWeek
+│
+├─ DateOffset              ← Days from today (0=today, -1=yesterday, -365=year ago)
+├─ FiscalMonthOffset       ← Months from current month (0=current, -1=previous, -12=last year)
+├─ FiscalQuarterOffset     ← Quarters from current quarter (0=current, -1=previous, -4=last year)
+├─ FiscalYearOffset        ← Years from current year (0=current, -1=previous year)
+├─ FinanceWeekOffset       ← Weeks from current week (0=current, -1=previous, -52=last year)
+│
+└─ PastDateFlag            ← "Y" = completed period, "N" = future/incomplete
+
+OFFSET LOGIC:
+═════════════════════════════════════════════════════════════════════════════
+
+Offset = Relative Position from Current Period
+
+Examples:
+  FiscalMonthOffset = 0   → Current month
+  FiscalMonthOffset = -1  → Previous month
+  FiscalMonthOffset = -12 → Same month last year
+  FiscalMonthOffset = -24 → Same month two years ago
+
+  FiscalQuarterOffset = 0   → Current quarter
+  FiscalQuarterOffset = -4  → Same quarter last year
+  FiscalQuarterOffset = -8  → Same quarter two years ago
+
+  DateOffset = 0   → Today
+  DateOffset = -1  → Yesterday
+  DateOffset = -365 → One year ago
+  DateOffset = -30 → 30 days ago
+*/
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 2: ANCHOR MEASURES (Foundation for all calculations)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Anchor measures establish the active reporting context
+// These measures:
+//   • Automatically respect slicers
+//   • Only include completed periods (PastDateFlag = "Y")
+//   • Provide reusable boundaries for calculations
+//   • Enable dynamic time intelligence
+
+// ─────────────────────────────────────────────────────────────────────────
+// Month-Level Anchors
+// ─────────────────────────────────────────────────────────────────────────
+
+max_monthoffset =
+CALCULATE(
+    MAX(DimCalendar[FiscalMonthOffset]),
+    DimCalendar[PastDateFlag] = "Y"
+)
+
+// Returns the maximum (most recent) fiscal month offset within slicer context
+// Example: If user selected last 3 months, returns 0 (current month is latest)
+// Respects user's date slicer automatically
+
+
+min_monthoffset =
+CALCULATE(
+    MIN(DimCalendar[FiscalMonthOffset]),
+    DimCalendar[PastDateFlag] = "Y"
+)
+
+// Returns the minimum (earliest) fiscal month offset within slicer context
+// Example: If user selected last 3 months (0, -1, -2), returns -2
+// Dynamically adjusts based on user's date selection
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Year-Level Anchors
+// ─────────────────────────────────────────────────────────────────────────
+
+max_yearoffset =
+CALCULATE(
+    MAX(DimCalendar[FiscalYearOffset]),
+    DimCalendar[PastDateFlag] = "Y"
+)
+
+// Returns the maximum fiscal year offset (0 = current year, -1 = prior year)
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Week-Level Anchors
+// ─────────────────────────────────────────────────────────────────────────
+
+max_weekoffset =
+CALCULATE(
+    MAX(DimCalendar[FinanceWeekOffset]),
+    DimCalendar[PastDateFlag] = "Y"
+)
+
+// Returns the maximum finance week offset for weekly calculations
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Day-Level Anchors
+// ─────────────────────────────────────────────────────────────────────────
+
+max_dayoffset =
+CALCULATE(
+    MAX(DimCalendar[DateOffset]),
+    DimCalendar[PastDateFlag] = "Y"
+)
+
+// Returns the maximum date offset (0 = today, -1 = yesterday, etc.)
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 3: STANDARD TIME INTELLIGENCE PATTERNS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// All time intelligence calculations follow the same reusable pattern:
+//
+//   CALCULATE(
+//       [Measure],
+//       REMOVEFILTERS(DimCalendar),
+//       DimCalendar[FiscalMonthOffset] = <TARGET_OFFSET>
+//   )
+//
+// This pattern:
+//   1. Takes the current measure
+//   2. Removes any existing date filters (REMOVEFILTERS)
+//   3. Applies a specific offset filter
+//   4. Returns the result for that offset period
+
+// ─────────────────────────────────────────────────────────────────────────
+// Current Period Measures
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_CurrentMonth =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] = [max_monthoffset]
+)
+
+// Current month sales
+// Equivalent to: SAMEPERIODLASTYEAR(DimCalendar[Date], 0)
+// But simpler: just filter to offset = 0
+
+
+Sales_CurrentQuarter =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalQuarterOffset] = 0
+)
+
+// Current quarter sales using offset method
+
+
+Sales_CurrentYear =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalYearOffset] = 0
+)
+
+// Current fiscal year sales
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Prior Period Measures (Previous Month/Quarter/Year)
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_PreviousMonth =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] = [max_monthoffset] - 1
+)
+
+// Previous month sales
+// Offset = Current offset - 1
+// Example: If current month offset = 0, previous = -1
+
+
+Sales_PreviousQuarter =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalQuarterOffset] = -1
+)
+
+// Previous quarter (4 quarters ago)
+
+
+Sales_PreviousYear =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalYearOffset] = -1
+)
+
+// Prior fiscal year sales
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Same Period Last Year (YoY Comparison)
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_SameMonthLastYear =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] = [max_monthoffset] - 12
+)
+
+// Same month from previous fiscal year
+// Offset calculation: Current month offset - 12 months
+// Example: If current is March (offset 0), same month last year = offset -12
+// Much simpler than: SAMEPERIODLASTYEAR(DimCalendar[Date])
+
+
+Sales_SameQuarterLastYear =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalQuarterOffset] = -4
+)
+
+// Same quarter from previous year (4 quarters back)
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Year-to-Date (YTD) and Period-to-Date
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_YearToDate =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalYearOffset] = 0,
+    DimCalendar[FiscalMonthOffset] >= 0,
+    DimCalendar[FiscalMonthOffset] <= [max_monthoffset]
+)
+
+// Year-to-date sales
+// Includes all months from fiscal year start (offset 0) to current month
+// If in April: includes Jan, Feb, Mar, Apr (offsets 3, 2, 1, 0)
+
+
+Sales_QuarterToDate =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalQuarterOffset] = 0,
+    DimCalendar[FiscalMonthOffset] >= ROUNDUP(
+        [max_monthoffset] / 3,
+        0
+    ) * 3 - 2,
+    DimCalendar[FiscalMonthOffset] <= [max_monthoffset]
+)
+
+// Quarter-to-date sales (from quarter start to current month)
+
+
+Sales_MonthToDate =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] = [max_monthoffset],
+    DimCalendar[Day] <= DAY(TODAY())
+)
+
+// Month-to-date sales (current month up to today)
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 4: GROWTH & VARIANCE ANALYSIS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Growth calculations demonstrate the power of offset method:
+// Instead of complex nested DATEADD calls, just subtract prior offset values
+
+// ─────────────────────────────────────────────────────────────────────────
+// Month-over-Month (MoM) Growth
+// ─────────────────────────────────────────────────────────────────────────
+
+MoM_Sales_Absolute =
+[Sales_CurrentMonth] - [Sales_PreviousMonth]
+
+// Absolute change: Current month - Previous month
+// Example: Current = $100K, Previous = $90K, Absolute change = $10K
+
+
+MoM_Sales_Percent =
+DIVIDE(
+    [MoM_Sales_Absolute],
+    [Sales_PreviousMonth],
+    0
+)
+
+// Percentage change: (Current - Previous) / Previous
+// Example: $10K / $90K = 11.1% growth
+// Built-in equivalent: Complex nested logic
+// Offset method: Simple subtraction and division
+
+
+MoM_Status =
+IF(
+    [MoM_Sales_Percent] > 0,
+    "↑ Growth",
+    IF(
+        [MoM_Sales_Percent] < 0,
+        "↓ Decline",
+        "→ Flat"
+    )
+)
+
+// Status indicator for reporting (Growth, Decline, or Flat)
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Year-over-Year (YoY) Growth
+// ─────────────────────────────────────────────────────────────────────────
+
+YoY_Sales_Absolute =
+[Sales_CurrentMonth] - [Sales_SameMonthLastYear]
+
+// Absolute change from same month previous year
+// Example: Current March = $100K, Last March = $85K, Growth = $15K
+
+
+YoY_Sales_Percent =
+DIVIDE(
+    [YoY_Sales_Absolute],
+    [Sales_SameMonthLastYear],
+    0
+)
+
+// Year-over-year percentage growth
+// Example: $15K / $85K = 17.6% YoY growth
+// Built-in equivalent: SAMEPERIODLASTYEAR + complex logic
+// Offset method: Simple offset calculation
+
+
+YoY_Sales_Percent_Formatted =
+FORMAT([YoY_Sales_Percent], "+0.0%;-0.0%;0.0%")
+
+// Formatted as +17.6% or -5.2% for dashboards
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Quarter-over-Quarter (QoQ) Growth
+// ─────────────────────────────────────────────────────────────────────────
+
+QoQ_Sales_Absolute =
+[Sales_CurrentQuarter] - [Sales_PreviousQuarter]
+
+// Absolute change from previous quarter
+
+
+QoQ_Sales_Percent =
+DIVIDE(
+    [QoQ_Sales_Absolute],
+    [Sales_PreviousQuarter],
+    0
+)
+
+// Quarter-over-quarter percentage growth
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Variance Analysis (Actual vs Target)
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_Variance =
+[Sales_CurrentMonth] - [Sales_Target_CurrentMonth]
+
+// Variance = Actual - Target
+// Positive = exceeded target
+// Negative = missed target
+
+
+Sales_Variance_Percent =
+DIVIDE(
+    [Sales_Variance],
+    [Sales_Target_CurrentMonth],
+    0
+)
+
+// Variance as percentage of target
+// Example: Actual = $100K, Target = $95K
+// Variance = $5K
+// Variance % = 5.3% above target
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 5: RUNNING TOTALS & COMPARATIVE PERIODS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────
+// Rolling Periods (Last 3/6/12 Months)
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_LastThreeMonths =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] >= [max_monthoffset] - 2,
+    DimCalendar[FiscalMonthOffset] <= [max_monthoffset]
+)
+
+// Last 3 months (including current)
+// Offsets: 0, -1, -2
+// Useful for trend analysis and smoothing
+
+
+Sales_LastSixMonths =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] >= [max_monthoffset] - 5,
+    DimCalendar[FiscalMonthOffset] <= [max_monthoffset]
+)
+
+// Last 6 months rolling period
+
+
+Sales_LastTwelveMonths =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] >= [max_monthoffset] - 11,
+    DimCalendar[FiscalMonthOffset] <= [max_monthoffset]
+)
+
+// Last 12 months (rolling)
+// Excludes leap year complexity with offset method
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Average Daily Sales (Current vs Prior Period)
+// ─────────────────────────────────────────────────────────────────────────
+
+Sales_AvgDailyCurrentMonth =
+DIVIDE(
+    [Sales_CurrentMonth],
+    COUNTROWS(
+        FILTER(
+            DimCalendar,
+            DimCalendar[FiscalMonthOffset] = [max_monthoffset]
+            && DimCalendar[PastDateFlag] = "Y"
+        )
+    )
+)
+
+// Average daily sales for current month
+// Accounts for different month lengths automatically
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 6: WHY OFFSET METHOD > BUILT-IN FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+COMPARISON: Offset Method vs Built-in DAX Functions
+
+SCENARIO: Calculate Same Month Last Year Sales
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BUILT-IN METHOD (Complex):
+─────────────────────────────────────────────────────────────────────────
+
+Sales_LastYear_BuiltIn =
+VAR PriorYearRange =
+    DATERANGE(
+        EDATE(MAX(DimCalendar[Date]), -12),
+        DATE(
+            YEAR(MAX(DimCalendar[Date])) - 1,
+            MONTH(MAX(DimCalendar[Date])),
+            DAY(MAX(DimCalendar[Date]))
+        )
+    )
+RETURN
+    CALCULATE(
+        [Total Sales],
+        PriorYearRange,
+        NOT(ISBLANK([Total Sales]))
+    )
+
+Issues:
+  ✗ Complex date arithmetic
+  ✗ Hard to debug
+  ✗ Different for each period type
+  ✗ Fiscal calendar incompatible
+  ✗ 7 lines of code
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OFFSET METHOD (Simple):
+─────────────────────────────────────────────────────────────────────────
+
+Sales_LastYear_Offset =
+CALCULATE(
+    [Total Sales],
+    REMOVEFILTERS(DimCalendar),
+    DimCalendar[FiscalMonthOffset] = [max_monthoffset] - 12
+)
+
+Benefits:
+  ✓ Simple integer logic
+  ✓ Easy to understand
+  ✓ Same pattern for all periods
+  ✓ Fiscal calendar friendly
+  ✓ 6 lines of code (40% shorter)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY ADVANTAGES:
+
+1. READABILITY
+   Built-in: "Calculate sales where date range matches EDATE logic"
+   Offset: "Calculate sales where FiscalMonthOffset = Current - 12"
+   Winner: Offset (immediately clear what -12 means)
+
+2. DEBUGGING
+   Built-in: Trace through DATERANGE, EDATE, YEAR, MONTH, DAY logic
+   Offset: Check if FiscalMonthOffset = expected value
+   Winner: Offset (10x easier to debug)
+
+3. FISCAL CALENDAR
+   Built-in: Requires custom DATERANGE logic per calendar type
+   Offset: Automatically respects calendar (built into DimCalendar)
+   Winner: Offset (calendar-agnostic)
+
+4. REUSABILITY
+   Built-in: Different functions for different scenarios (DATEADD, SAMEPERIODLASTYEAR, TOTALYTD)
+   Offset: Single consistent pattern
+   Winner: Offset (one pattern fits all)
+
+5. PERFORMANCE
+   Built-in: Complex date calculations on every query
+   Offset: Simple integer comparison (faster)
+   Winner: Offset (better query performance)
+
+6. MAINTENANCE
+   Built-in: Complex logic scattered across multiple measures
+   Offset: Anchor measures centralized in DimCalendar
+   Winner: Offset (change once, works everywhere)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 7: IMPLEMENTATION GUIDELINES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+HOW TO USE OFFSET METHOD IN YOUR MEASURES:
+
+1. IDENTIFY THE PERIOD
+   ├─ Monthly calculation? Use FiscalMonthOffset
+   ├─ Quarterly calculation? Use FiscalQuarterOffset
+   ├─ Daily calculation? Use DateOffset
+   └─ Weekly calculation? Use FinanceWeekOffset
+
+2. DETERMINE THE OFFSET
+   ├─ Current period? Offset = 0 (or [max_monthoffset])
+   ├─ Previous period? Offset = -1 (or [max_monthoffset] - 1)
+   ├─ Same period last year? Offset = -12 (for months) or -4 (for quarters)
+   └─ Last N periods? Offset >= [max] - N + 1 && Offset <= [max]
+
+3. APPLY THE STANDARD PATTERN
+   ├─ CALCULATE(
+   ├─     [Measure],
+   ├─     REMOVEFILTERS(DimCalendar),
+   ├─     DimCalendar[FiscalMonthOffset] = [TARGET_OFFSET]
+   ├─ )
+   └─ Done!
+
+4. AVOID COMMON MISTAKES
+   ├─ ✗ Don't hardcode offsets (use anchor measures instead)
+   ├─ ✗ Don't forget REMOVEFILTERS (otherwise slicer blocks calculation)
+   ├─ ✗ Don't skip PastDateFlag (prevents incomplete period calculations)
+   └─ ✓ Always use anchor measures for consistency
+
+EXAMPLE: Build a "Sales vs Prior Year" measure
+
+Step 1: Current Sales
+Current_Sales = CALCULATE([Total Sales], REMOVEFILTERS(DimCalendar), DimCalendar[FiscalMonthOffset] = [max_monthoffset])
+
+Step 2: Prior Year Sales
+PriorYear_Sales = CALCULATE([Total Sales], REMOVEFILTERS(DimCalendar), DimCalendar[FiscalMonthOffset] = [max_monthoffset] - 12)
+
+Step 3: Calculate Variance
+Sales_vs_PriorYear = [Current_Sales] - [PriorYear_Sales]
+
+Done! No complex date logic needed.
+*/
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 8: REAL-WORLD SCENARIOS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario 1: Dashboard KPI — Current Month vs Previous Month
+// ─────────────────────────────────────────────────────────────────────────
+
+KPI_CurrentMonth_MoMComparison =
+VAR CurrentSales = [Sales_CurrentMonth]
+VAR PriorSales = [Sales_PreviousMonth]
+VAR Variance = CurrentSales - PriorSales
+VAR VariancePercent = DIVIDE(Variance, PriorSales, 0)
+RETURN
+    IF(
+        VariancePercent > 0.05,
+        "↑ Strong Growth",
+        IF(
+            VariancePercent < -0.05,
+            "↓ Significant Decline",
+            "→ Stable"
+        )
+    )
+
+// Dashboard shows: Current month status with growth indicator
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario 2: Trend Analysis — Last 12 Months Performance
+// ─────────────────────────────────────────────────────────────────────────
+
+Trend_Last12Months_AvgGrowth =
+VAR CurrentQuarter = [Sales_CurrentQuarter]
+VAR PriorYear = [Sales_SameQuarterLastYear]
+VAR AnnualGrowth = DIVIDE(CurrentQuarter - PriorYear, PriorYear, 0)
+RETURN
+    ROUND(AnnualGrowth * 4, 3)  // Annualize quarterly growth
+
+// Trend shows: Projected annual growth based on current trajectory
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario 3: Forecast Accuracy — YTD vs Target
+// ─────────────────────────────────────────────────────────────────────────
+
+Forecast_YTD_VariancePercent =
+DIVIDE(
+    [Sales_YearToDate] - [Target_YearToDate],
+    [Target_YearToDate],
+    0
+)
+
+// Tracking: How close to annual target based on YTD performance
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUMMARY: OFFSET METHOD ADVANTAGES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/*
+The Offset Method standardizes all time intelligence calculations:
+
+BEFORE (Complex, Hard to Maintain):
+  • SAMEPERIODLASTYEAR() for YoY
+  • DATEADD() for relative periods
+  • TOTALYTD() for year-to-date
+  • PREVIOUSMONTH() for month-over-month
+  → Different functions, different logic, different patterns
+  → Hard to debug
+  → Difficult to extend
+  → Calendar-dependent
+
+AFTER (Simple, Easy to Maintain):
+  • All calculations use offset logic
+  • Single consistent pattern
+  • Anchor measures centralize logic
+  • Calendar-agnostic
+  → Easy to understand
+  → Easy to debug
+  → Easy to extend
+  → Works with any calendar (fiscal or standard)
+
+RESULT FOR INSIGHTS 2.0:
+  ✓ 100+ enterprise measures built on offset logic
+  ✓ All time intelligence consistent and maintainable
+  ✓ Supports US standard, European, and custom fiscal calendars
+  ✓ Easy for new team members to learn and extend
+  ✓ Simplified debugging when measures give unexpected results
+  ✓ Scalable pattern for growing reporting requirements
+
+This approach enabled scaling from 50 individual datasets with
+inconsistent calculations to 1 shared semantic model with
+standardized, enterprise-grade time intelligence.
+*/
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END OF DAX TIME INTELLIGENCE — OFFSET METHOD
+// ═══════════════════════════════════════════════════════════════════════════

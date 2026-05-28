@@ -1,0 +1,54 @@
+# Power BI
+*.pbix
+*.pbit
+*.pbs
+*.pbids
+.pbix.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Credentials and sensitive data
+*.env
+*.config
+secrets/
+credentials/
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# SQL Server
+*.bak
+*.mdf
+*.ldf
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+/node_modules
+/dist
+/build
