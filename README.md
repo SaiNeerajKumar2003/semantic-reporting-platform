@@ -10,15 +10,19 @@ An enterprise was running **50 fragmented Power BI reports** with **50 separate 
 
 **What Was Broken:**
 - ❌ **Data Inconsistency:** Same metrics showed different numbers across reports (no single source of truth)
-- ❌ **4-Hour Downtime:** Nightly refresh blocked all users from 9 PM to 1 AM
-- ❌ **Unscalable Access:** Manual per-user setup, limited to 50-100 concurrent users
+- ❌ **Excessive Database Load:** 50 separate refresh jobs refreshing the same tables independently, causing database overload and resource contention
+- ❌ **Morning Refresh Overhead:** 4-hour nightly refresh window (typically 2-6 AM morning hours) consuming peak database capacity
+- ❌ **Query Performance Degradation:** During refresh cycles, database load spike caused slow query performance for active users
+- ❌ **Unscalable Capacity:** Over-capacity usage on Power BI Premium due to inefficient refresh patterns; hard-capped at 50-100 concurrent users
+- ❌ **Manual Access Control:** Per-user setup, limited to 50-100 concurrent users
 - ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets
 - ❌ **Slow Delivery:** New reports took 3-4 weeks (had to build a new dataset each time)
 
 **Business Impact:**
 - Decisions made on inconsistent data
-- Users couldn't access reports during 4+ hour nightly window
-- Couldn't grow beyond 100 users
+- Database performance degradation during morning refresh window
+- Over-capacity usage driving up Power BI infrastructure costs (₹1.2 Lakhs/month)
+- Couldn't scale beyond 100 users due to capacity constraints
 - Expensive and slow to add new analytics
 
 ---

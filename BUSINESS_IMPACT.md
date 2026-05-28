@@ -30,16 +30,20 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 - Different departments seeing different data for same business metrics
 
 **Operational Challenges:**
-- **Refresh Window:** 4-hour 15-minute nightly downtime (users blocked from accessing reports)
+- **Database Overload:** 50 separate refresh jobs independently refreshing same tables, causing database load spikes and resource contention
+- **Morning Refresh Window:** 4-hour 15-minute morning refresh cycle (2-6 AM typical) consuming peak database capacity
+- **Performance Degradation:** During refresh cycles, active users experienced slow query performance as database struggled with resource contention
+- **Over-Capacity Usage:** Power BI Premium capacity utilization at 85%+ causing cost overruns (₹1.2 Lakhs/month)
 - **Access Control:** Manual per-user setup (slow, error-prone, unscalable)
-- **User Capacity:** Hard-capped at 50-100 concurrent users
-- **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets
+- **User Capacity:** Hard-capped at 50-100 concurrent users due to Premium capacity constraints
+- **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets and redundant refresh operations
 - **Report Delivery:** New reports took 3-4 weeks (required creating new dataset)
 
 **Business Impact:**
 - ❌ Decisions made on inconsistent data
-- ❌ Users waiting 4+ hours for nightly data refresh
-- ❌ Limited to 100 users (couldn't grow)
+- ❌ Database resource contention during morning refresh window affecting query performance
+- ❌ Excessive infrastructure costs (₹1.2 Lakhs/month Power BI Premium due to over-capacity usage)
+- ❌ Limited to 100 users (couldn't grow due to capacity constraints)
 - ❌ Expensive to add new reports (3-4 weeks)
 - ❌ No self-service analytics capability
 
