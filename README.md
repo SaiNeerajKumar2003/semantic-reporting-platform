@@ -98,19 +98,21 @@ scattered RLS,                    unified RLS,
 - Unified 50 independent datasets into 1 star schema
 - Conformed dimensions (DimDate, DimDepartment, DimUser, DimProduct)
 - Fact tables (FactSales, FactReporting)
-- Department-level and user-level RLS rules
+- **Report-level RLS rules** (Department-level: what data each user can SEE in reports based on their department)
 - 100+ enterprise measures using offset-based DAX time intelligence
 
 **Tier 2: Refresh Optimization (92% Improvement)**
-- Incremental Refresh Policy: 2 years historical (frozen) + 30 days incremental (daily refresh) = 95% data reduction
+- Incremental Refresh Policy: Configurable partitioning strategy (e.g., 2 years historical frozen + 30 days incremental daily refresh) = up to 95% data reduction
+  * Partition strategy varies by table: some use year+month+days, others use year+days, month+days combinations based on data volume
+  * Historical data frozen (never refreshed), incremental period refreshed on schedule
 - Enhanced Refresh API: Table-by-table orchestration (dimensions first, facts after)
 - Per-table monitoring and failure isolation
 - Combined result: 4h 15m → 20 minutes
 
-**Tier 3: Portal with Automatic RLS (~500 Users, Full Control)**
+**Tier 3: Portal with Portal-Level RLS (~500 Users, Full Control)**
 - Replaced external vendor portal with in-house solution
 - Azure AD SSO (no separate credentials)
-- Automatic RLS based on user department and role
+- **Portal-level RLS** (User department and role determine which reports they can ACCESS in the portal)
 - Service principal with secure, time-limited tokens
 - Full control with no vendor dependency for changes
 - Complete audit trail for compliance
@@ -151,22 +153,26 @@ scattered RLS,                    unified RLS,
 **Design:**
 - **Dimension Tables:** DimDate, DimDepartment, DimUser, DimProduct  
 - **Fact Tables:** FactSales, FactReporting  
-- **RLS Rules:** Department-level and user-level automatic filtering (configured once, applies to ALL 20 reports)
+- **Report-Level RLS Rules:** Department-level filtering (what data users can SEE in reports, configured once, applies to ALL 20 reports)
 - **Analytics:** 100+ enterprise measures using offset-based DAX time intelligence  
 
 **Critical Benefit:**
 - **Before:** Each of 50 datasets had separate RLS → same user needed RLS configured per dataset → scattered, duplicated, hard to maintain
-- **After:** RLS configured once at semantic model level → automatically applies to all 20 reports → single source of access control
+- **After:** Report-level RLS configured once at semantic model level → automatically applies to all 20 reports → single source of data filtering
 - **Impact:** 100% reduction in RLS configuration complexity, zero per-report RLS setup needed
+- **Note:** Combined with Portal-level RLS (tier 3) which controls WHICH reports users can ACCESS
 
 → See [semantic-architecture.md](semantic-architecture.md) for complete model documentation
 
 ### 2. Two-Tier Refresh Optimization (92% Improvement)
 
 **Tier 1: Incremental Refresh Policy**
-- Historical data (2 years): Frozen, never refreshed
-- Incremental data (30 days): Refreshed daily
-- Result: 95% data volume reduction
+- Configurable partition strategy per table based on data volume and business requirements
+  * Example: 2 years historical (frozen) + 30 days incremental (daily refresh) = 95% reduction
+  * Other combinations: 1 year + 60 days, 3 years + 14 days, month-based partitioning, etc.
+- Historical data: Frozen, never refreshed
+- Incremental period: Refreshed on schedule (daily, weekly, as needed)
+- Result: Up to 95% data volume reduction (varies by partition strategy)
 
 **Tier 2: Enhanced Refresh API**
 - Table-by-table orchestration (dimensions first, facts after)
@@ -178,12 +184,12 @@ scattered RLS,                    unified RLS,
 
 → See [refresh-strategy.md](refresh-strategy.md) for complete strategy documentation
 
-### 3. Portal with Automatic RLS (1000+ Users)
+### 3. Portal with Portal-Level RLS (~500 Users)
 
 **User Authentication:** Azure AD SSO (no separate credentials)  
-**Access Control:** Automatic RLS based on user's department and role  
+**Portal-Level Access Control:** Based on user's department and role, determines which reports user can ACCESS in portal  
 **Token Generation:** Service principal with secure, time-limited tokens  
-**Scalability:** 1000+ concurrent users, 99.9% uptime  
+**Report-Level Filtering:** Combined with report-level RLS to show only authorized data within each report  
 **Audit Trail:** Complete logging for compliance  
 
 → See [portal-architecture.md](portal-architecture.md) for complete portal documentation

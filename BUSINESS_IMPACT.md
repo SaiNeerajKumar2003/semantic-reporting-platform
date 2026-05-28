@@ -94,22 +94,26 @@ An enterprise faced **two critical infrastructure challenges** (70% semantic mod
 - All 20 reports pull from same model
 
 **Tier 2: Refresh Optimization**
-- Incremental Refresh Policy: 95% data volume reduction (2 years historical frozen, 30 days incremental)
+- Incremental Refresh Policy: Configurable partition strategy (e.g., 2 years frozen + 30 days incremental = 95% reduction)
+  * Strategy varies by table: year+month+days, year+days, month+days combinations
+  * Historical data frozen, incremental period refreshed on schedule
 - Enhanced Refresh API: Table-by-table orchestration with per-table failure isolation
 - Combined result: 20-minute refresh (vs. 4h 15m previously)
 
-**Tier 3: Unified RLS Management**
-- RLS rules configured once at semantic model level
+**Tier 3: Report-Level RLS Management**
+- Report-level RLS rules configured once at semantic model level (what data users can SEE)
 - Automatically applied to all 20 reports
 - No per-report RLS configuration needed
-- Single source of access control
+- Single source of data filtering
+- Example: Sales user only sees Sales dept data across all reports
 
 #### Solution 2: Portal Independence (30% of effort)
 
 **Tier 4: In-House Portal**
 - Replaced external vendor portal with in-house solution
 - Azure AD SSO integration for ~500 employees
-- Automatic RLS-based access control
+- **Portal-level RLS** (determines which reports users can ACCESS based on department and role)
+- Combined with report-level RLS for complete access control
 - Full control with no vendor dependency
 - Complete audit trail for compliance
 
