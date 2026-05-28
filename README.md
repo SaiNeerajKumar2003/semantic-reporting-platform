@@ -10,13 +10,12 @@ An enterprise was running **50 fragmented Power BI reports** with **50 separate 
 
 **What Was Broken:**
 - ❌ **Data Inconsistency:** Same metrics showed different numbers across reports (no single source of truth)
-- ❌ **Excessive Database Load:** 50 separate refresh jobs refreshing the same tables independently, causing database overload and resource contention
-- ❌ **Morning Refresh Overhead:** 4-hour nightly refresh window (typically 2-6 AM morning hours) consuming peak database capacity
-- ❌ **Query Performance Degradation:** During refresh cycles, database load spike caused slow query performance for active users
-- ❌ **Unscalable Capacity:** Over-capacity usage on Power BI Premium due to inefficient refresh patterns; hard-capped at 50-100 concurrent users
-- ❌ **Manual Access Control:** Per-user setup, limited to 50-100 concurrent users
-- ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets
-- ❌ **Slow Delivery:** New reports took 3-4 weeks (had to build a new dataset each time)
+- ❌ **Excessive Database Load:** 50 separate refresh jobs independently refreshing the same tables, causing database overload and resource contention
+- ❌ **Morning Refresh Overhead:** 4-hour morning refresh window (typically 2-6 AM) consuming peak database capacity and I/O
+- ❌ **Query Performance Degradation:** During refresh cycles, database load spikes caused slow query performance for active users
+- ❌ **Over-Capacity Usage:** Embedded Capacity near 90% utilization due to inefficient refresh patterns and redundant data loads; scaling blocked at 50-100 concurrent users
+- ❌ **High Maintenance:** 70% of engineering time managing 50 separate datasets and redundant refresh operations
+- ❌ **Slow Delivery:** New reports took 3-4 weeks (had to create new dataset each time)
 
 **Business Impact:**
 - Decisions made on inconsistent data
@@ -48,14 +47,14 @@ I designed and built a **three-tier enterprise analytics platform** to solve thi
 | **Datasets** | 50 individual | 1 semantic model | 100% consolidation |
 | **Concurrent Users** | 50-100 | 1000+ | 20x capacity |
 | **Query Performance** | 8-12 sec | 1-2 sec | 87% faster |
-| **Availability** | 81% (4h downtime) | 100% (24/7) | Always accessible |
+| **Embedded Capacity Usage** | 90% (over-capacity) | 15% (optimized) | 75% reduction |
 | **Database Load** | 100% | 10% | 90% reduction |
 
 **Verified Annual Impact:**
-- **Cost Savings:** ₹17 Lakhs/year (Portal development avoided + PBI capacity optimization)
+- **Cost Savings:** ₹17 Lakhs/year (Portal development avoided + Embedded Capacity optimization from 90% → 15% utilization)
 - **Business Agility:** 4x faster refresh cycles (daily → 3-4x daily)
-- **User Capacity:** 20x increase (50-100 → 1000+)
-- **Uptime:** 100% (non-blocking refresh vs. 4-hour nightly downtime)
+- **User Capacity:** 20x increase (50-100 → 1000+ concurrent users)
+- **Database Performance:** 90% reduction in database load due to consolidated refresh strategy
 
 ---
 

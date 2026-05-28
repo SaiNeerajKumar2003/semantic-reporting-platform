@@ -31,18 +31,18 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 
 **Operational Challenges:**
 - **Database Overload:** 50 separate refresh jobs independently refreshing same tables, causing database load spikes and resource contention
-- **Morning Refresh Window:** 4-hour 15-minute morning refresh cycle (2-6 AM typical) consuming peak database capacity
+- **Morning Refresh Window:** 4-hour 15-minute morning refresh cycle (2-6 AM typical) consuming peak database capacity and I/O
 - **Performance Degradation:** During refresh cycles, active users experienced slow query performance as database struggled with resource contention
-- **Over-Capacity Usage:** Power BI Premium capacity utilization at 85%+ causing cost overruns (₹1.2 Lakhs/month)
-- **Access Control:** Manual per-user setup (slow, error-prone, unscalable)
-- **User Capacity:** Hard-capped at 50-100 concurrent users due to Premium capacity constraints
+- **Over-Capacity Usage:** Embedded Capacity utilization at 90% causing cost overruns (₹1.2 Lakhs/month) and limiting concurrent user scaling
+- **Inefficient Refresh Pattern:** Multiple datasets refreshing the same source tables independently = redundant database hits and duplicated data loads
+- **User Capacity:** Hard-capped at 50-100 concurrent users due to Embedded Capacity constraints
 - **Maintenance Overhead:** 70% of engineering time spent managing 50 separate datasets and redundant refresh operations
 - **Report Delivery:** New reports took 3-4 weeks (required creating new dataset)
 
 **Business Impact:**
 - ❌ Decisions made on inconsistent data
 - ❌ Database resource contention during morning refresh window affecting query performance
-- ❌ Excessive infrastructure costs (₹1.2 Lakhs/month Power BI Premium due to over-capacity usage)
+- ❌ Excessive infrastructure costs (₹1.2 Lakhs/month Embedded Capacity due to over-capacity usage)
 - ❌ Limited to 100 users (couldn't grow due to capacity constraints)
 - ❌ Expensive to add new reports (3-4 weeks)
 - ❌ No self-service analytics capability
@@ -94,7 +94,7 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 | **User Capacity** | 50-100 | 1000+ | 20x increase |
 | **Data Freshness** | Daily | 3-4x daily | 4x more current |
 | **Report Creation** | 3-4 weeks | 3-4 days | 90% faster |
-| **User Availability** | 81% (4h downtime) | 100% (no downtime) | 100% always-on |
+| **Embedded Capacity Usage** | 90% (over-capacity) | 15% (optimized) | 75% reduction |
 | **Access Setup** | Manual (days) | Automatic (instant) | Zero manual work |
 
 ### Cost & Time Impact
@@ -106,9 +106,9 @@ Transformed enterprise analytics from a fragmented, manual-access system serving
 - Your approach: Built and maintained using Claude Pro
 - **Savings:** ₹8 Lakhs/year in vendor costs
 
-**2. Power BI Capacity Optimization: ₹9 Lakhs/year**
-- Before optimization: ₹1.2 Lakhs/month (₹14.4 Lakhs/year)
-- After optimization: ₹45K/month (₹5.4 Lakhs/year)
+**2. Embedded Capacity Optimization: ₹9 Lakhs/year**
+- Before optimization: ₹1.2 Lakhs/month (₹14.4 Lakhs/year) at 90% capacity utilization
+- After optimization: ₹45K/month (₹5.4 Lakhs/year) at 15% capacity utilization
 - **Monthly savings:** ₹75K
 - **Annual savings:** ₹9 Lakhs/year
 
